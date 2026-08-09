@@ -1,7 +1,10 @@
 import cv2
 import numpy as np
+import math
 
 def to_grayscale(image):
+    if len(image.shape) == 2:
+        return image
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 def remove_noise(image):
@@ -16,18 +19,36 @@ def apply_thresholding(image):
         cv2.THRESH_BINARY, 11, 2
     )
 
-def deskew(image):
-    # Deskewing logic
-    coords = np.column_stack(np.where(image > 0))
-    if len(coords) == 0:
-        return image
-    
-    angle = cv2.minAreaRect(coords)[-1]
-    if angle < -45:
-        angle = -(90 + angle)
-    else:
-        angle = -angle
+def get_angle(x1, y1, x2, y2):
+    """Get the angle of this line with the horizontal axis."""
+    deltaX = x2 - x1
+    deltaY = y2 - y1
+    return np.arctan2(deltaY , deltaX) * 180 / math.pi
 
+def deskew(image):
+    # The image here is inverted (white text on black background)
+    edges = cv2.Canny(image, 80, 120)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, minLineLength=20, maxLineGap=10)
+    
+    if lines is None:
+        return image
+        
+    # Sort lines from widest to shortest (OpenCV may return (N, 4) or (N, 1, 4))
+    if len(lines.shape) == 3:
+        lines = lines[:, 0, :]
+    lines = sorted(lines, key=(lambda l: abs(l[0]-l[2])), reverse=True)
+    
+    # Use the widest line to determine rotation angle
+    angle = 0.0
+    for x1, y1, x2, y2 in lines:
+        # Check if line spans at least 25% of the image width
+        if (abs(x2-x1) / image.shape[1]) > 0.25:
+            angle = get_angle(x1, y1, x2, y2)
+            break
+            
+    if abs(angle) < 1.0 or abs(angle) > 45.0:
+        return image
+        
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
