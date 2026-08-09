@@ -42,7 +42,16 @@ def morphological_operations(image):
     
     # 2. Dilation: Expands the white pixels (text) to fill in any hollow gaps
     kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    return cv2.dilate(opened, kernel_dilate, iterations=1)
+    dilated = cv2.dilate(opened, kernel_dilate, iterations=1)
+    
+    # 3. Blob Filtering: Mathematically eradicate remaining tiny pepper noise
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(dilated, connectivity=8)
+    cleaned = np.zeros_like(dilated)
+    for i in range(1, num_labels):
+        if stats[i, cv2.CC_STAT_AREA] >= 10:
+            cleaned[labels == i] = 255
+            
+    return cleaned
 
 def process_image(image_path, output_path=None):
     """Run the full preprocessing pipeline on an image."""
