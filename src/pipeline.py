@@ -57,15 +57,11 @@ def deskew(image):
     return rotated
 
 def morphological_operations(image):
-    # 1. Opening: Removes tiny isolated noise specks from the background
-    kernel_open = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-    opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel_open)
-    
-    # 2. Dilation: Expands the white pixels (text) to fill in any hollow gaps
+    # 1. Dilation: Expands the white pixels (text) to fill in any hollow gaps caused by rotation aliasing
     kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    dilated = cv2.dilate(opened, kernel_dilate, iterations=1)
+    dilated = cv2.dilate(image, kernel_dilate, iterations=1)
     
-    # 3. Blob Filtering: Mathematically eradicate remaining tiny pepper noise
+    # 2. Blob Filtering: Mathematically eradicate remaining tiny pepper noise
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(dilated, connectivity=8)
     cleaned = np.zeros_like(dilated)
     for i in range(1, num_labels):
