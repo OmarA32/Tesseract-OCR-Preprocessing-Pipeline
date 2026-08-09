@@ -15,7 +15,8 @@ def visualize_all_steps(image_path):
     thresh = apply_thresholding(denoised)
     inverted = cv2.bitwise_not(thresh)
     deskewed = deskew(inverted)
-    final_image = morphological_operations(cv2.bitwise_not(deskewed))
+    final_image = morphological_operations(deskewed)
+    final_image = cv2.bitwise_not(final_image)
 
     # Setup matplotlib grid
     fig, axes = plt.subplots(2, 3, figsize=(15, 8))

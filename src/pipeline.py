@@ -85,9 +85,11 @@ def process_image(image_path, output_path=None):
     inverted = cv2.bitwise_not(thresh)
     deskewed = deskew(inverted)
     
-    # Invert back to normal
-    final_image = cv2.bitwise_not(deskewed)
-    final_image = morphological_operations(final_image)
+    # Morphological operations expect white text on black background
+    cleaned = morphological_operations(deskewed)
+    
+    # Invert back to normal (black text on white background)
+    final_image = cv2.bitwise_not(cleaned)
 
     if output_path:
         cv2.imwrite(output_path, final_image)
