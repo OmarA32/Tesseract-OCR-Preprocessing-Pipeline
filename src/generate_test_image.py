@@ -13,8 +13,9 @@ cv2.putText(img, 'Testing 123', (50, 250), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
 # Add noise (salt and pepper)
 noise = np.zeros(img.shape, np.uint8)
 cv2.randu(noise, 0, 255)
-black = noise < 30
-white = noise > 225
+# Reduce noise to a realistic level (4%) instead of the extreme 23%
+black = noise < 5
+white = noise > 250
 img[black] = 0
 img[white] = 255
 
