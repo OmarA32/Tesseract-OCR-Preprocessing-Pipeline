@@ -5,17 +5,15 @@ def to_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 def remove_noise(image):
-    # Use a stronger median blur for heavy salt & pepper noise
-    blurred = cv2.medianBlur(image, 5)
-    # Fast Non-Local Means Denoising works wonders on grain
-    return cv2.fastNlMeansDenoising(blurred, None, h=10, templateWindowSize=7, searchWindowSize=21)
+    # Use a gentle NLMeans pass to eliminate background noise without destroying thin text
+    return cv2.fastNlMeansDenoising(image, None, h=5, templateWindowSize=7, searchWindowSize=21)
 
 def apply_thresholding(image):
-    # Increased block size and constant C to prevent amplifying small noise in shadows
+    # Standard adaptive thresholding parameters that don't erase thin text
     return cv2.adaptiveThreshold(
         image, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        cv2.THRESH_BINARY, 31, 15
+        cv2.THRESH_BINARY, 11, 2
     )
 
 def deskew(image):
@@ -38,9 +36,9 @@ def deskew(image):
     return rotated
 
 def morphological_operations(image):
-    kernel = np.ones((2, 2), np.uint8)
-    # Opening (erosion followed by dilation) is useful in removing noise
-    return cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+    # Use closing with a larger 3x3 kernel to fill hollow spots inside the text
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
 
 def process_image(image_path, output_path=None):
     """Run the full preprocessing pipeline on an image."""
