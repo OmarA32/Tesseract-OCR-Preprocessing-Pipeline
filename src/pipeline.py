@@ -53,23 +53,27 @@ def deskew(image):
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
     
-    return rotated
+    # Binarize the cubic-interpolated image to keep edges perfectly smooth without jagged "chunks"
+    _, rotated_binary = cv2.threshold(rotated, 127, 255, cv2.THRESH_BINARY)
+    
+    return rotated_binary
 
 def morphological_operations(image):
-    # 1. Dilation: Expands the white pixels (text) to fill in any hollow gaps caused by rotation aliasing
-    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    dilated = cv2.dilate(image, kernel_dilate, iterations=1)
-    
-    # 2. Blob Filtering: Mathematically eradicate remaining tiny pepper noise
-    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(dilated, connectivity=8)
-    cleaned = np.zeros_like(dilated)
+    # 1. Blob Filtering FIRST: Mathematically eradicate tiny pepper noise BEFORE it gets dilated
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity=8)
+    cleaned = np.zeros_like(image)
     for i in range(1, num_labels):
-        if stats[i, cv2.CC_STAT_AREA] >= 100:
+        # Threshold of 25 perfectly preserves the dot on the 'i' (area ~35) while deleting noise (area 1-20)
+        if stats[i, cv2.CC_STAT_AREA] >= 25:
             cleaned[labels == i] = 255
             
-    return cleaned
+    # 2. Dilation: Expands the cleanly filtered white pixels (text) to make them delightfully bold
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    dilated = cv2.dilate(cleaned, kernel_dilate, iterations=1)
+            
+    return dilated
 
 def process_image(image_path, output_path=None):
     """Run the full preprocessing pipeline on an image."""
