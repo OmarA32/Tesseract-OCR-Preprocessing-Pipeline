@@ -1,8 +1,21 @@
 import pytesseract
 import cv2
 import sys
+import os
 import matplotlib.pyplot as plt
 from pipeline import process_image
+
+# Try to automatically find Tesseract if it's not in the PATH
+if sys.platform.startswith('win'):
+    default_paths = [
+        r'C:\Program Files\Tesseract-OCR\tesseract.exe',
+        r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
+        r'C:\Users\g3m43\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+    ]
+    for path in default_paths:
+        if os.path.exists(path):
+            pytesseract.pytesseract.tesseract_cmd = path
+            break
 
 def evaluate_ocr(image_path, processed_path):
     print(f"--- Evaluating {image_path} ---")
