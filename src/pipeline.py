@@ -37,11 +37,11 @@ def deskew(image):
 
 def morphological_operations(image):
     # 1. Opening: Removes tiny isolated noise specks from the background
-    kernel_open = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel_open)
     
     # 2. Closing: Fills in tiny hollow spots inside the text
-    kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
     return cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel_close)
 
 def process_image(image_path, output_path=None):
