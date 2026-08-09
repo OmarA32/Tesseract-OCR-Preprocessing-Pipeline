@@ -5,14 +5,17 @@ def to_grayscale(image):
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 def remove_noise(image):
-    return cv2.medianBlur(image, 3)
+    # Use a stronger median blur for heavy salt & pepper noise
+    blurred = cv2.medianBlur(image, 5)
+    # Fast Non-Local Means Denoising works wonders on grain
+    return cv2.fastNlMeansDenoising(blurred, None, h=10, templateWindowSize=7, searchWindowSize=21)
 
 def apply_thresholding(image):
-    # Adaptive thresholding is generally better for varying lighting
+    # Increased block size and constant C to prevent amplifying small noise in shadows
     return cv2.adaptiveThreshold(
         image, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        cv2.THRESH_BINARY, 11, 2
+        cv2.THRESH_BINARY, 31, 15
     )
 
 def deskew(image):
