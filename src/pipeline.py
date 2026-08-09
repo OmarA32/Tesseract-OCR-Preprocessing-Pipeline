@@ -41,7 +41,7 @@ def morphological_operations(image):
     opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel_open)
     
     # 2. Dilation: Expands the white pixels (text) to fill in any hollow gaps
-    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     dilated = cv2.dilate(opened, kernel_dilate, iterations=1)
     
     # 3. Blob Filtering: Mathematically eradicate remaining tiny pepper noise
