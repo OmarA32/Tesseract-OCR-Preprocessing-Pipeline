@@ -13,6 +13,7 @@ def visualize_all_steps(image_path):
     gray = to_grayscale(original)
     denoised = remove_noise(gray)
     thresh = apply_thresholding(denoised)
+    thresh = cv2.medianBlur(thresh, 3)
     inverted = cv2.bitwise_not(thresh)
     deskewed = deskew(inverted)
     final_image = morphological_operations(deskewed)

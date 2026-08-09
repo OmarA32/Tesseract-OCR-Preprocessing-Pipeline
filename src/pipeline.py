@@ -86,6 +86,9 @@ def process_image(image_path, output_path=None):
     no_noise = remove_noise(gray)
     thresh = apply_thresholding(no_noise)
     
+    # Apply a gentle median blur on the binary image to cleanly erase salt-and-pepper noise while preserving text
+    thresh = cv2.medianBlur(thresh, 3)
+    
     # Invert image to deskew properly (deskew needs white text on black background for minAreaRect)
     inverted = cv2.bitwise_not(thresh)
     deskewed = deskew(inverted)
