@@ -66,7 +66,7 @@ def morphological_operations(image):
     num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(dilated, connectivity=8)
     cleaned = np.zeros_like(dilated)
     for i in range(1, num_labels):
-        if stats[i, cv2.CC_STAT_AREA] >= 10:
+        if stats[i, cv2.CC_STAT_AREA] >= 100:
             cleaned[labels == i] = 255
             
     return cleaned
