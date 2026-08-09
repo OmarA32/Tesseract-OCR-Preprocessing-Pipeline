@@ -70,7 +70,8 @@ def morphological_operations(image):
             cleaned[labels == i] = 255
             
     # 2. Dilation: Expands the cleanly filtered white pixels (text) to make them delightfully bold
-    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    # Using a MORPH_CROSS kernel adds subtle, symmetric weight without bleeding small text together
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
     dilated = cv2.dilate(cleaned, kernel_dilate, iterations=1)
             
     return dilated
