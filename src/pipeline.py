@@ -13,10 +13,11 @@ def remove_noise(image):
 
 def apply_thresholding(image):
     # Standard adaptive thresholding parameters that don't erase thin text
+    # Increased block size to 31 to prevent thick letters from becoming hollow
     return cv2.adaptiveThreshold(
         image, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-        cv2.THRESH_BINARY, 11, 2
+        cv2.THRESH_BINARY, 31, 2
     )
 
 def get_angle(x1, y1, x2, y2):
