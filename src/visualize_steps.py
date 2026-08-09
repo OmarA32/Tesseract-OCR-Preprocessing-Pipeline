@@ -37,8 +37,9 @@ def visualize_all_steps(image_path):
     show_img(axes[1, 2], final_image, '6. Final Morphological')
 
     plt.tight_layout()
-    print("Close the window to continue...")
-    plt.show()
+    output_path = "data/processed/visualization_grid.png"
+    plt.savefig(output_path)
+    print(f"Saved visualization to {output_path}")
 
 if __name__ == "__main__":
     visualize_all_steps("data/raw/synthetic_noisy_test.jpg")
