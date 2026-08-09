@@ -6,7 +6,7 @@ def to_grayscale(image):
 
 def remove_noise(image):
     # Use a gentle NLMeans pass to eliminate background noise without destroying thin text
-    return cv2.fastNlMeansDenoising(image, None, h=5, templateWindowSize=7, searchWindowSize=21)
+    return cv2.fastNlMeansDenoising(image, None, h=3, templateWindowSize=7, searchWindowSize=21)
 
 def apply_thresholding(image):
     # Standard adaptive thresholding parameters that don't erase thin text
@@ -36,9 +36,13 @@ def deskew(image):
     return rotated
 
 def morphological_operations(image):
-    # Use closing with a larger 3x3 kernel to fill hollow spots inside the text
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+    # 1. Opening: Removes tiny isolated noise specks from the background
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    opened = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel_open)
+    
+    # 2. Closing: Fills in tiny hollow spots inside the text
+    kernel_close = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    return cv2.morphologyEx(opened, cv2.MORPH_CLOSE, kernel_close)
 
 def process_image(image_path, output_path=None):
     """Run the full preprocessing pipeline on an image."""
